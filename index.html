@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مواقيت الصلاة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0e1a;
+      padding: 16px;
+    }
+
+    /* ─── Card ─── */
+    .card {
+      width: 100%;
+      max-width: 390px;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,.7);
+      position: relative;
+    }
+
+    /* ─── Hero (top half) ─── */
+    .hero {
+      position: relative;
+      height: 340px;
+      background-image: url('https://images.unsplash.com/photo-1564769662533-4f00a87b4056?w=800&q=80');
+      background-size: cover;
+      background-position: center bottom;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 32px;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(10,14,26,.55) 0%,
+        rgba(10,14,26,.3) 40%,
+        rgba(10,14,26,.85) 100%
+      );
+    }
+
+    /* Location bar */
+    .location-bar {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 2;
+    }
+    .location-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 999px;
+      padding: 6px 14px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .location-pill:hover { background: rgba(255,255,255,.22); }
+    .location-pill svg { flex-shrink: 0; }
+
+    .hijri-badge {
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      padding: 6px 14px;
+      color: rgba(255,255,255,.85);
+      font-size: 12px;
+    }
+
+    /* Center hero content */
+    .hero-body {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+    .prayer-label {
+      color: rgba(255,255,255,.75);
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .prayer-name {
+      color: #fff;
+      font-size: 30px;
+      font-weight: 900;
+      margin-bottom: 18px;
+      text-shadow: 0 2px 12px rgba(0,0,0,.4);
+    }
+
+    .countdown-wrap {
+      background: rgba(255,255,255,.1);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 18px;
+      padding: 14px 28px;
+      display: inline-block;
+    }
+    .countdown {
+      font-size: 44px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: 4px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .countdown-sub {
+      color: rgba(255,255,255,.65);
+      font-size: 12px;
+      text-align: center;
+      margin-top: 5px;
+      letter-spacing: 1px;
+    }
+
+    /* ─── Prayer list (bottom half) ─── */
+    .prayer-list {
+      background: #0f1626;
+      padding: 20px 20px 24px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .section-title {
+      color: rgba(255,255,255,.5);
+      font-size: 12px;
+      letter-spacing: 2px;
+    }
+    .date-label {
+      color: rgba(255,255,255,.4);
+      font-size: 12px;
+    }
+
+    .prayers {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .prayer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid transparent;
+      transition: all .2s;
+      cursor: default;
+    }
+    .prayer-row:hover {
+      background: rgba(255,255,255,.07);
+    }
+    .prayer-row.active {
+      background: linear-gradient(135deg, rgba(52,199,89,.18), rgba(52,199,89,.08));
+      border-color: rgba(52,199,89,.35);
+    }
+
+    .prayer-row-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .prayer-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: rgba(255,255,255,.06);
+    }
+    .prayer-row.active .prayer-icon {
+      background: rgba(52,199,89,.2);
+    }
+
+    .prayer-row-name {
+      color: rgba(255,255,255,.85);
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .prayer-row.active .prayer-row-name {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .prayer-row-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .prayer-time {
+      color: rgba(255,255,255,.7);
+      font-size: 16px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      direction: ltr;
+    }
+    .prayer-row.active .prayer-time {
+      color: #34c759;
+    }
+    .active-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34c759;
+      box-shadow: 0 0 8px #34c759;
+      animation: pulse 1.8s infinite;
+      display: none;
+    }
+    .prayer-row.active .active-dot { display: block; }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .5; transform: scale(1.4); }
+    }
+
+    /* ─── Loading / Error states ─── */
+    .state-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10,14,26,.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      z-index: 10;
+      border-radius: 28px;
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid rgba(255,255,255,.1);
+      border-top-color: #34c759;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .state-text { color: rgba(255,255,255,.7); font-size: 14px; }
+    .retry-btn {
+      margin-top: 8px;
+      background: #34c759;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 24px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .retry-btn:hover { opacity: .85; }
+    .hidden { display: none !important; }
+
+    /* ─── Method selector ─── */
+    .method-select {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 10px;
+      color: rgba(255,255,255,.7);
+      font-family: 'Cairo', sans-serif;
+      font-size: 11px;
+      padding: 4px 8px;
+      cursor: pointer;
+      outline: none;
+    }
+    .method-select option { background: #0f1626; }
+  </style>
+</head>
+<body>
+
+<div class="card" id="card">
+
+  <!-- Loading overlay -->
+  <div class="state-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <span class="state-text">جارِ تحديد موقعك …</span>
+  </div>
+
+  <!-- Error overlay -->
+  <div class="state-overlay hidden" id="errorOverlay">
+    <span style="font-size:34px">⚠️</span>
+    <span class="state-text" id="errorMsg">تعذّر تحميل مواقيت الصلاة</span>
+    <button class="retry-btn" onclick="init()">إعادة المحاولة</button>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="location-bar">
+      <div class="hijri-badge" id="hijriDate">— هجري</div>
+      <div class="location-pill" onclick="init()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+        <span id="locationText">جارِ التحديد…</span>
+      </div>
+    </div>
+
+    <div class="hero-body">
+      <div class="prayer-label">الصلاة القادمة</div>
+      <div class="prayer-name" id="nextPrayerName">—</div>
+      <div class="countdown-wrap">
+        <div class="countdown" id="countdown">00:00:00</div>
+        <div class="countdown-sub">باقي على الأذان</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prayer list -->
+  <div class="prayer-list">
+    <div class="section-header">
+      <span class="section-title">مواقيت الصلاة</span>
+      <select class="method-select" id="methodSelect" onchange="onMethodChange()">
+        <option value="4">أم القرى (السعودية)</option>
+        <option value="3">مسلم عالمي</option>
+        <option value="2">أمريكا الشمالية ISNA</option>
+        <option value="1">جامعة العلوم الإسلامية، كراتشي</option>
+        <option value="5">مصر – وزارة الأوقاف</option>
+        <option value="9">خليج عُمان</option>
+        <option value="11">مجلس فقه أمريكا الشمالية</option>
+      </select>
+    </div>
+    <div class="prayers" id="prayerRows">
+      <!-- rows injected by JS -->
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ─────────────────────────────────
+     Config
+  ───────────────────────────────── */
+  const PRAYERS = [
+    { key: 'Fajr',    icon: '🌙', name: 'الفجر'  },
+    { key: 'Dhuhr',   icon: '☀️', name: 'الظهر'  },
+    { key: 'Asr',     icon: '🌤', name: 'العصر'  },
+    { key: 'Maghrib', icon: '🌅', name: 'المغرب' },
+    { key: 'Isha',    icon: '🌃', name: 'العشاء' },
+  ];
+
+  let timings   = null;   // { Fajr:'04:52', … }
+  let timersIds = [];
+  let method    = 4;
+  let coords    = null;   // { lat, lon }
+
+  /* ─────────────────────────────────
+     Entry
+  ───────────────────────────────── */
+  async function init() {
+    showLoading('جارِ تحديد موقعك …');
+    clearTimers();
+
+    try {
+      coords = await getCoords();
+      await loadPrayerTimes(coords.lat, coords.lon, method);
+      await loadLocationName(coords.lat, coords.lon);
+    } catch (e) {
+      showError(e.message || 'حدث خطأ غير متوقع');
+    }
+  }
+
+  function onMethodChange() {
+    method = +document.getElementById('methodSelect').value;
+    if (coords) {
+      showLoading('جارِ تحديث المواقيت …');
+      clearTimers();
+      loadPrayerTimes(coords.lat, coords.lon, method)
+        .catch(e => showError(e.message));
+    }
+  }
+
+  /* ─────────────────────────────────
+     Geolocation
+  ───────────────────────────────── */
+  function getCoords() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        // Fallback to Mecca
+        resolve({ lat: 21.3891, lon: 39.8579 });
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        p => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
+        _err => {
+          // Fallback to Mecca if denied
+          resolve({ lat: 21.3891, lon: 39.8579 });
+        },
+        { timeout: 8000 }
+      );
+    });
+  }
+
+  /* ─────────────────────────────────
+     API – Prayer times  (Aladhan)
+  ───────────────────────────────── */
+  async function loadPrayerTimes(lat, lon, mth) {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2,'0');
+    const mm = String(today.getMonth()+1).padStart(2,'0');
+    const yyyy = today.getFullYear();
+
+    const url = `https://api.aladhan.com/v1/timings/${dd}-${mm}-${yyyy}`
+              + `?latitude=${lat}&longitude=${lon}&method=${mth}`;
+
+    const res  = await fetch(url);
+    if (!res.ok) throw new Error('فشل الاتصال بخادم المواقيت');
+    const json = await res.json();
+
+    if (json.code !== 200) throw new Error('استجابة غير متوقعة من الخادم');
+
+    timings = json.data.timings;   // raw object with all prayer keys
+    const hijri = json.data.date.hijri;
+    document.getElementById('hijriDate').textContent =
+      `${hijri.day} ${hijri.month.ar} ${hijri.year}`;
+
+    renderPrayers();
+    hideOverlays();
+    startCountdown();
+  }
+
+  /* ─────────────────────────────────
+     Reverse Geocoding (Nominatim)
+  ───────────────────────────────── */
+  async function loadLocationName(lat, lon) {
+    try {
+      const res  = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ar`,
+        { headers: { 'Accept-Language': 'ar' } }
+      );
+      const json = await res.json();
+      const addr = json.address || {};
+      const city = addr.city || addr.town || addr.village || addr.county || '';
+      const country = addr.country || '';
+      document.getElementById('locationText').textContent =
+        city ? `${city}، ${country}` : country || 'الموقع الحالي';
+    } catch {
+      document.getElementById('locationText').textContent = 'الموقع الحالي';
+    }
+  }
+
+  /* ─────────────────────────────────
+     Render prayer rows
+  ───────────────────────────────── */
+  function renderPrayers() {
+    const container = document.getElementById('prayerRows');
+    const current   = getCurrentPrayerKey();
+    container.innerHTML = '';
+
+    PRAYERS.forEach(p => {
+      const time   = formatTime(timings[p.key]);
+      const active = (p.key === current);
+      const row    = document.createElement('div');
+      row.className = 'prayer-row' + (active ? ' active' : '');
+      row.id = 'row-' + p.key;
+      row.innerHTML = `
+        <div class="prayer-row-right">
+          <div class="prayer-icon">${p.icon}</div>
+          <span class="prayer-row-name">${p.name}</span>
+        </div>
+        <div class="prayer-row-left">
+          <span class="prayer-time">${time}</span>
+          <div class="active-dot"></div>
+        </div>`;
+      container.appendChild(row);
+    });
+
+    // Update next prayer label
+    const next = getNextPrayer();
+    document.getElementById('nextPrayerName').textContent =
+      next ? next.name : PRAYERS[0].name;
+  }
+
+  /* ─────────────────────────────────
+     Countdown timer
+  ───────────────────────────────── */
+  function startCountdown() {
+    tick();
+    const id = setInterval(tick, 1000);
+    timersIds.push(id);
+  }
+
+  function tick() {
+    const next = getNextPrayer();
+    if (!next) return;
+
+    const now    = new Date();
+    const target = prayerDate(next.key);
+    let   diff   = Math.max(0, Math.floor((target - now) / 1000));
+
+    const h  = Math.floor(diff / 3600);
+    const m  = Math.floor((diff % 3600) / 60);
+    const s  = diff % 60;
+    document.getElementById('countdown').textContent =
+      `${pad(h)}:${pad(m)}:${pad(s)}`;
+
+    // Refresh rows every minute to keep "active" highlight accurate
+    if (s === 0) renderPrayers();
+  }
+
+  /* ─────────────────────────────────
+     Helpers
+  ───────────────────────────────── */
+  function getNextPrayer() {
+    const now = new Date();
+    for (const p of PRAYERS) {
+      if (prayerDate(p.key) > now) return p;
+    }
+    return PRAYERS[0]; // after Isha → next is Fajr
+  }
+
+  function getCurrentPrayerKey() {
+    const now = new Date();
+    let   last = PRAYERS[PRAYERS.length - 1];
+    for (let i = PRAYERS.length - 1; i >= 0; i--) {
+      if (prayerDate(PRAYERS[i].key) <= now) { last = PRAYERS[i]; break; }
+    }
+    return last.key;
+  }
+
+  function prayerDate(key) {
+    const [h, m] = timings[key].split(':').map(Number);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d;
+  }
+
+  function formatTime(raw) {
+    // raw = "HH:MM" (24h) → convert to 12h Arabic-style
+    const [h, m] = raw.split(':').map(Number);
+    const suffix = h < 12 ? 'ص' : 'م';
+    const h12    = h % 12 || 12;
+    return `${pad(h12)}:${pad(m)} ${suffix}`;
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function clearTimers() { timersIds.forEach(clearInterval); timersIds = []; }
+
+  function showLoading(msg) {
+    document.getElementById('loadingOverlay').querySelector('.state-text').textContent = msg;
+    document.getElementById('loadingOverlay').classList.remove('hidden');
+    document.getElementById('errorOverlay').classList.add('hidden');
+  }
+  function showError(msg) {
+    document.getElementById('errorMsg').textContent = msg;
+    document.getElementById('errorOverlay').classList.remove('hidden');
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  }
+  function hideOverlays() {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    document.getElementById('errorOverlay').classList.add('hidden');
+  }
+
+  /* ─────────────────────────────────
+     Boot
+  ───────────────────────────────── */
+  init();
+</script>
+</body>
+</html>
