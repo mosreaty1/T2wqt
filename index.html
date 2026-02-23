@@ -335,7 +335,22 @@
           </svg>
           <span id="methodLabel">مصر – وزارة الأوقاف</span>
         </div>
-        <div class="glass-chip" id="hijriDate">— هجري</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="glass-chip bell-btn" id="bellBtn" onclick="toggleNotifications()" title="تفعيل الإشعارات">
+            <!-- bell on -->
+            <svg id="bellOn" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <!-- bell off (slash) -->
+            <svg id="bellOff" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
+          <div class="glass-chip" id="hijriDate">— هجري</div>
+        </div>
       </div>
 
       <!-- gallery dot nav (vertical, left side) -->
@@ -568,6 +583,7 @@ async function loadTimes(lat, lon, mth) {
   render();
   hideOverlays();
   startTick();
+  scheduleNotifications();
 }
 
 /* ── Nominatim ── */
@@ -657,6 +673,65 @@ function fmt(raw) {
 function pad(n)  { return String(n).padStart(2, '0'); }
 function clearTimers() { timerIds.forEach(clearInterval); timerIds = []; }
 function $(id)   { return document.getElementById(id); }
+
+/* ── Notifications ── */
+let notifEnabled  = false;
+let notifTimeouts = [];
+
+function toggleNotifications() {
+  if (!('Notification' in window)) {
+    alert('المتصفح لا يدعم الإشعارات');
+    return;
+  }
+  if (!notifEnabled) {
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        notifEnabled = true;
+        updateBellUI();
+        scheduleNotifications();
+      }
+    });
+  } else {
+    notifEnabled = false;
+    clearNotifTimeouts();
+    updateBellUI();
+  }
+}
+
+function updateBellUI() {
+  const btn = $('bellBtn');
+  $('bellOn').style.display  = notifEnabled ? 'block' : 'none';
+  $('bellOff').style.display = notifEnabled ? 'none'  : 'block';
+  btn.style.background = notifEnabled
+    ? 'rgba(39,174,96,.75)'
+    : 'rgba(0,0,0,.38)';
+}
+
+function scheduleNotifications() {
+  clearNotifTimeouts();
+  if (!notifEnabled || !timings) return;
+  const now = Date.now();
+  PRAYERS.forEach(p => {
+    const t = prayerDate(p.key).getTime();
+    const delay = t - now;
+    if (delay > 0) {
+      const id = setTimeout(() => {
+        new Notification(`حان وقت صلاة ${p.name}`, {
+          body: `وقت صلاة ${p.name} – مصر وزارة الأوقاف`,
+          icon: 'https://cdn-icons-png.flaticon.com/512/3209/3209265.png',
+          dir:  'rtl',
+          lang: 'ar'
+        });
+      }, delay);
+      notifTimeouts.push(id);
+    }
+  });
+}
+
+function clearNotifTimeouts() {
+  notifTimeouts.forEach(clearTimeout);
+  notifTimeouts = [];
+}
 
 function setLoading(msg) {
   $('loadingText').textContent = msg;
