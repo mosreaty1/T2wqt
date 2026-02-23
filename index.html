@@ -41,10 +41,8 @@
         max-width: 920px;
         align-items: start;
       }
-      .sidebar { display: flex; flex-direction: column; gap: 18px; }
     }
     @media (max-width: 899px) {
-      .sidebar    { display: none; }
       .page-root  { max-width: 440px; width: 100%; }
     }
 
@@ -366,41 +364,6 @@
       transform: rotate(45deg) translate(-1px,-1px);
     }
 
-    /* ══════════════════════════════════
-       DESKTOP SIDEBAR
-    ══════════════════════════════════ */
-    .sb-card {
-      background: rgba(255,255,255,.72);
-      backdrop-filter: blur(12px);
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,.08);
-    }
-    .sb-card h3 {
-      font-size: 12px; color: #888;
-      font-weight: 700; letter-spacing: .5px;
-      margin-bottom: 12px;
-    }
-    .sb-next {
-      background: linear-gradient(135deg, var(--green) 0%, #1a9e50 100%);
-      border-radius: 18px; padding: 18px;
-      color: #fff; text-align: center;
-    }
-    .sb-next .n-label  { font-size: 11px; opacity: .82; margin-bottom: 5px; }
-    .sb-next .n-name   { font-size: 28px; font-weight: 900; margin-bottom: 6px; }
-    .sb-next .n-cd     { font-size: 30px; font-weight: 900; direction: ltr; font-variant-numeric: tabular-nums; letter-spacing: 2px; }
-    .sb-next .n-sub    { font-size: 11px; opacity: .7; margin-top: 4px; }
-
-    .info-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(0,0,0,.06);
-      font-size: 13px;
-    }
-    .info-row:last-child { border-bottom: none; }
-    .i-label { color: #888; font-weight: 600; }
-    .i-val   { color: #222; font-weight: 700; }
-    .i-val.green { color: var(--green-text); }
   </style>
 </head>
 <body>
@@ -492,28 +455,6 @@
 
   </div><!-- /card -->
 
-  <!-- ── Desktop sidebar ── -->
-  <div class="sidebar">
-    <div class="sb-next sb-card">
-      <div class="n-label">الصلاة القادمة</div>
-      <div class="n-name" id="sbNextName">—</div>
-      <div class="n-cd"   id="sbCountdown">00 : 00 : 00</div>
-      <div class="n-sub">باقي على الأذان</div>
-    </div>
-
-    <div class="sb-card">
-      <h3>تفاصيل اليوم</h3>
-      <div class="info-row"><span class="i-label">الشروق</span>   <span class="i-val" id="sbSunrise">—</span></div>
-      <div class="info-row"><span class="i-label">الغروب</span>   <span class="i-val" id="sbSunset">—</span></div>
-      <div class="info-row"><span class="i-label">منتصف الليل</span><span class="i-val" id="sbMidnight">—</span></div>
-      <div class="info-row"><span class="i-label">الصلاة الحالية</span><span class="i-val green" id="sbCurrent">—</span></div>
-    </div>
-
-    <div class="sb-card">
-      <h3>جميع المواقيت</h3>
-      <div id="sbAllPrayers"></div>
-    </div>
-  </div>
 
 </div><!-- /page-root -->
 
@@ -751,24 +692,6 @@ function render() {
   /* hero next prayer */
   $('nextPrayerName').textContent = nextP ? nextP.name : PRAYERS[0].name;
 
-  /* sidebar */
-  $('sbNextName').textContent  = nextP ? nextP.name : PRAYERS[0].name;
-  $('sbCurrent').textContent   = PRAYERS.find(p => p.key === curKey)?.name || '—';
-  $('sbSunrise').textContent   = fmt(timings['Sunrise']  || '—');
-  $('sbSunset').textContent    = fmt(timings['Sunset']   || '—');
-  $('sbMidnight').textContent  = fmt(timings['Midnight'] || '—');
-
-  const allDiv = $('sbAllPrayers');
-  allDiv.innerHTML = '';
-  PRAYERS.forEach(p => {
-    const row    = document.createElement('div');
-    const active = p.key === curKey;
-    row.className = 'info-row';
-    row.innerHTML = `
-      <span class="i-label">${p.name}</span>
-      <span class="i-val${active?' green':''}">${fmt(timings[p.key])}</span>`;
-    allDiv.appendChild(row);
-  });
 }
 
 /* ── Countdown ── */
@@ -782,8 +705,7 @@ function tick() {
   const m = Math.floor((diff % 3600) / 60);
   const s = diff % 60;
   const str = `${pad(h)} : ${pad(m)} : ${pad(s)}`;
-  $('countdown').textContent   = str;
-  $('sbCountdown').textContent = str;
+  $('countdown').textContent = str;
   if (s === 0 && m === 0) render();
 }
 
