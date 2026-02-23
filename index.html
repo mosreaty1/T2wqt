@@ -675,8 +675,15 @@ function clearTimers() { timerIds.forEach(clearInterval); timerIds = []; }
 function $(id)   { return document.getElementById(id); }
 
 /* ── Notifications ── */
-let notifEnabled  = false;
-let notifTimeouts = [];
+let notifEnabled   = false;
+let notifTimeouts  = [];
+let swReg          = null;
+let pinnedInterval = null;
+
+/* Register Service Worker */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(r => { swReg = r; });
+}
 
 function toggleNotifications() {
   if (!('Notification' in window)) {
@@ -689,48 +696,84 @@ function toggleNotifications() {
         notifEnabled = true;
         updateBellUI();
         scheduleNotifications();
+        startPinnedNotification();
       }
     });
   } else {
     notifEnabled = false;
     clearNotifTimeouts();
+    stopPinnedNotification();
     updateBellUI();
   }
 }
 
 function updateBellUI() {
-  const btn = $('bellBtn');
   $('bellOn').style.display  = notifEnabled ? 'block' : 'none';
   $('bellOff').style.display = notifEnabled ? 'none'  : 'block';
-  btn.style.background = notifEnabled
+  $('bellBtn').style.background = notifEnabled
     ? 'rgba(39,174,96,.75)'
     : 'rgba(0,0,0,.38)';
 }
 
+/* ── Prayer-time alerts ── */
 function scheduleNotifications() {
   clearNotifTimeouts();
   if (!notifEnabled || !timings) return;
   const now = Date.now();
   PRAYERS.forEach(p => {
-    const t = prayerDate(p.key).getTime();
-    const delay = t - now;
+    const delay = prayerDate(p.key).getTime() - now;
     if (delay > 0) {
-      const id = setTimeout(() => {
-        new Notification(`حان وقت صلاة ${p.name}`, {
-          body: `وقت صلاة ${p.name} – مصر وزارة الأوقاف`,
-          icon: 'https://cdn-icons-png.flaticon.com/512/3209/3209265.png',
-          dir:  'rtl',
-          lang: 'ar'
-        });
-      }, delay);
-      notifTimeouts.push(id);
+      notifTimeouts.push(setTimeout(() => showAlert(p.name), delay));
     }
   });
+}
+
+function showAlert(name) {
+  if (!notifEnabled) return;
+  const opts = {
+    body: `وقت صلاة ${name} – مصر وزارة الأوقاف`,
+    icon: 'https://cdn-icons-png.flaticon.com/512/3209/3209265.png',
+    tag:  'prayer-alert', dir: 'rtl', lang: 'ar',
+    requireInteraction: false
+  };
+  if (swReg) swReg.showNotification(`🕌 حان وقت صلاة ${name}`, opts);
+  else new Notification(`🕌 حان وقت صلاة ${name}`, opts);
 }
 
 function clearNotifTimeouts() {
   notifTimeouts.forEach(clearTimeout);
   notifTimeouts = [];
+}
+
+/* ── Pinned (always-visible) notification ── */
+function startPinnedNotification() {
+  showPinnedNotification();
+  pinnedInterval = setInterval(showPinnedNotification, 60_000);
+}
+
+function stopPinnedNotification() {
+  clearInterval(pinnedInterval);
+  pinnedInterval = null;
+  if (swReg) swReg.getNotifications({ tag: 'prayer-pin' }).then(ns => ns.forEach(n => n.close()));
+}
+
+function showPinnedNotification() {
+  if (!notifEnabled || !timings || !swReg) return;
+  const next = nextPrayer();
+  if (!next) return;
+  const diff = Math.max(0, Math.floor((prayerDate(next.key) - Date.now()) / 1000));
+  const h = Math.floor(diff / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  swReg.showNotification('🕌 مواقيت الصلاة', {
+    body:               `⏱ باقي ${pad(h)}:${pad(m)} على صلاة ${next.name}`,
+    icon:               'https://cdn-icons-png.flaticon.com/512/3209/3209265.png',
+    tag:                'prayer-pin',
+    renotify:           true,
+    requireInteraction: true,
+    silent:             true,
+    dir:                'rtl',
+    lang:               'ar'
+  });
 }
 
 function setLoading(msg) {
