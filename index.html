@@ -11,13 +11,12 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --green:       #27ae60;
-      --green-bg:    #eaf7ef;
-      --green-text:  #1e8449;
-      --card-radius: 24px;
+      --green:      #27ae60;
+      --green-bg:   #eaf7ef;
+      --green-text: #1e8449;
+      --radius:     24px;
     }
 
-    /* ── Page ── */
     body {
       font-family: 'Cairo', sans-serif;
       min-height: 100vh;
@@ -25,117 +24,147 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      background: #c8d8c0;
+      background: #b8ceb0;
       background-image:
-        radial-gradient(ellipse at 20% 50%, rgba(180,210,160,0.6) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 20%, rgba(200,220,180,0.5) 0%, transparent 55%);
+        radial-gradient(ellipse at 15% 55%, rgba(160,200,140,.7) 0%, transparent 58%),
+        radial-gradient(ellipse at 85% 15%, rgba(190,215,170,.5) 0%, transparent 55%);
     }
 
-    /* ── Desktop layout ── */
+    /* ── Desktop 2-column layout ── */
     @media (min-width: 900px) {
       body { align-items: flex-start; padding: 40px 20px; }
       .page-root {
         display: grid;
         grid-template-columns: 440px 1fr;
-        gap: 32px;
+        gap: 28px;
         width: 100%;
-        max-width: 940px;
+        max-width: 920px;
         align-items: start;
       }
-      .sidebar { display: flex; flex-direction: column; gap: 20px; }
+      .sidebar { display: flex; flex-direction: column; gap: 18px; }
     }
     @media (max-width: 899px) {
-      .sidebar { display: none; }
-      .page-root { max-width: 440px; width: 100%; }
+      .sidebar    { display: none; }
+      .page-root  { max-width: 440px; width: 100%; }
     }
 
-    /* ── Card ── */
+    /* ══════════════════════════════════
+       CARD
+    ══════════════════════════════════ */
     .card {
       width: 100%;
-      border-radius: var(--card-radius);
+      border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 20px 60px rgba(0,0,0,.22), 0 4px 12px rgba(0,0,0,.1);
       position: relative;
       background: #fff;
     }
 
     /* ══════════════════════════════════
-       HERO
+       HERO – cross-fade image gallery
     ══════════════════════════════════ */
     .hero {
       position: relative;
       height: 280px;
-      background: url('https://images.unsplash.com/photo-1564769662533-4f00a87b4056?w=900&q=85')
-                  center / cover no-repeat;
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
     }
+    .hero:active { cursor: grabbing; }
     @media (min-width: 900px) { .hero { height: 310px; } }
 
-    /* gradient: transparent top → dark bottom-third */
-    .hero::after {
-      content: '';
-      position: absolute;
-      inset: 0;
+    /* Two stacked bg layers for cross-fade */
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: #1a2a1a center / cover no-repeat;
+      opacity: 0;
+      transition: opacity .65s ease;
+    }
+    .hero-bg.show { opacity: 1; }
+
+    /* gradient overlay (always on top of bg layers) */
+    .hero-grad {
+      position: absolute; inset: 0;
       background: linear-gradient(
         to bottom,
-        rgba(0,0,0,0.08) 0%,
-        rgba(0,0,0,0.05) 40%,
-        rgba(0,0,0,0.62) 100%
+        rgba(0,0,0,.06) 0%,
+        rgba(0,0,0,.04) 40%,
+        rgba(0,0,0,.62) 100%
       );
+      pointer-events: none;
+      z-index: 1;
     }
 
-    /* top bar */
+    /* ── top bar ── */
     .top-bar {
       position: absolute;
-      top: 14px;
-      right: 14px;
-      left: 14px;
+      top: 14px; right: 14px; left: 14px;
       z-index: 3;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
     }
-
-    .hijri-chip {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(0,0,0,0.38);
+    .glass-chip {
+      display: flex; align-items: center; gap: 5px;
+      background: rgba(0,0,0,.38);
       backdrop-filter: blur(10px);
       border-radius: 999px;
-      padding: 5px 12px;
-      color: rgba(255,255,255,0.92);
-      font-size: 11px;
-      font-weight: 600;
+      padding: 5px 13px;
+      color: rgba(255,255,255,.9);
+      font-size: 11px; font-weight: 600;
       white-space: nowrap;
+      border: none; font-family: 'Cairo', sans-serif;
+      cursor: default;
     }
-    .hijri-chip svg { opacity: .75; }
+    button.glass-chip { cursor: pointer; transition: background .2s; }
+    button.glass-chip:hover { background: rgba(0,0,0,.52); }
 
-    .method-btn {
+    /* ── gallery dots ── */
+    .gallery-dots {
+      position: absolute;
+      top: 50px; left: 14px;
+      z-index: 3;
       display: flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(0,0,0,0.38);
-      backdrop-filter: blur(10px);
-      border-radius: 999px;
-      padding: 5px 12px;
-      color: rgba(255,255,255,0.88);
-      font-size: 11px;
-      font-weight: 600;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .g-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.35);
       cursor: pointer;
-      border: none;
-      font-family: 'Cairo', sans-serif;
-      transition: background .2s;
-      white-space: nowrap;
+      transition: background .2s, transform .2s;
+      border: 1px solid rgba(255,255,255,.2);
     }
-    .method-btn:hover { background: rgba(0,0,0,0.52); }
+    .g-dot.active {
+      background: #fff;
+      transform: scale(1.25);
+      box-shadow: 0 0 6px rgba(255,255,255,.6);
+    }
+    /* ── left/right arrows (desktop hover) ── */
+    .hero-arrow {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      z-index: 3;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      opacity: 0; transition: opacity .2s;
+    }
+    .hero:hover .hero-arrow { opacity: 1; }
+    .hero-arrow.prev { right: 14px; }
+    .hero-arrow.next { left:  14px; }
 
-    /* hero bottom: countdown LEFT · prayer+location RIGHT */
+    /* ── hero bottom split ── */
     .hero-bottom {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       z-index: 3;
       display: flex;
       align-items: flex-end;
@@ -144,18 +173,12 @@
       gap: 8px;
     }
 
-    /* ─ LEFT: countdown ─ */
-    .countdown-side {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
+    /* countdown (left) */
+    .countdown-side { display: flex; flex-direction: column; align-items: flex-start; }
     .countdown-label {
-      color: rgba(255,255,255,0.82);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .5px;
-      margin-bottom: 2px;
+      color: rgba(255,255,255,.82);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .5px; margin-bottom: 2px;
     }
     .countdown {
       color: #fff;
@@ -163,97 +186,84 @@
       font-weight: 900;
       direction: ltr;
       font-variant-numeric: tabular-nums;
-      letter-spacing: 2px;
-      line-height: 1;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+      letter-spacing: 2px; line-height: 1;
+      text-shadow: 0 2px 10px rgba(0,0,0,.4);
     }
 
-    /* ─ RIGHT: prayer name + location ─ */
-    .prayer-side {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      text-align: right;
-    }
-    .location-row {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-bottom: 3px;
-    }
+    /* prayer name + location (right) */
+    .prayer-side { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+    .location-row { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
     .location-text {
-      color: rgba(255,255,255,0.88);
-      font-size: 11.5px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity .2s;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 160px;
+      color: rgba(255,255,255,.88);
+      font-size: 11.5px; font-weight: 600;
+      cursor: pointer; transition: opacity .2s;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 165px;
     }
-    .location-text:hover { opacity: .75; }
-    .loc-pin { color: rgba(255,255,255,0.75); flex-shrink: 0; }
+    .location-text:hover { opacity: .7; }
+    .loc-pin { color: rgba(255,255,255,.75); flex-shrink: 0; }
 
     .next-prayer-name {
       color: #fff;
       font-size: clamp(28px, 9vw, 46px);
-      font-weight: 900;
-      line-height: 1;
-      text-shadow: 0 2px 14px rgba(0,0,0,0.35);
+      font-weight: 900; line-height: 1;
+      text-shadow: 0 2px 14px rgba(0,0,0,.35);
     }
 
+    /* ── bg label (image name) ── */
+    .bg-label {
+      position: absolute;
+      bottom: 22px; left: 50%; transform: translateX(-50%);
+      z-index: 3;
+      background: rgba(0,0,0,.32);
+      backdrop-filter: blur(6px);
+      border-radius: 999px;
+      padding: 3px 10px;
+      color: rgba(255,255,255,.75);
+      font-size: 10px; white-space: nowrap;
+      pointer-events: none;
+      opacity: 0; transition: opacity .4s;
+    }
+    .bg-label.show { opacity: 1; }
+
     /* ══════════════════════════════════
-       PRAYER LIST (white bottom)
+       PRAYER LIST
     ══════════════════════════════════ */
     .prayer-list {
       background: #fff;
       padding: 16px 14px 20px;
     }
-
     .prayers-row {
       display: flex;
       align-items: stretch;
       justify-content: space-around;
       gap: 4px;
     }
-
     .prayer-col {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 5px;
       padding: 10px 6px 12px;
       border-radius: 14px;
-      cursor: default;
       transition: background .25s;
-      min-width: 0;
     }
-    .prayer-col.active {
-      background: var(--green-bg);
-    }
+    .prayer-col.active { background: var(--green-bg); }
 
     .p-name {
-      font-size: 12px;
-      color: #b0b8b4;
-      font-weight: 700;
+      font-size: 12px; color: #b0b8b4; font-weight: 700;
       white-space: nowrap;
     }
     .prayer-col.active .p-name { color: var(--green-text); }
 
     .p-time {
       font-size: clamp(13px, 3.5vw, 16px);
-      font-weight: 700;
-      color: #1c2a22;
-      direction: ltr;
-      white-space: nowrap;
+      font-weight: 700; color: #1c2a22;
+      direction: ltr; white-space: nowrap;
     }
     .prayer-col.active .p-time { color: var(--green-text); }
 
     .p-dot {
-      width: 5px; height: 5px;
-      border-radius: 50%;
+      width: 5px; height: 5px; border-radius: 50%;
       background: var(--green);
       box-shadow: 0 0 6px var(--green);
       animation: blink 1.8s ease-in-out infinite;
@@ -263,24 +273,20 @@
 
     @keyframes blink {
       0%,100% { opacity: 1; transform: scale(1); }
-      50%      { opacity: .35; transform: scale(1.6); }
+      50%      { opacity: .3; transform: scale(1.7); }
     }
 
     /* ══════════════════════════════════
-       LOADING / ERROR overlays
+       OVERLAYS
     ══════════════════════════════════ */
     .overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(8,20,10,0.88);
+      position: absolute; inset: 0;
+      background: rgba(8,20,10,.88);
       backdrop-filter: blur(4px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      z-index: 30;
-      border-radius: var(--card-radius);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px; z-index: 30;
+      border-radius: var(--radius);
     }
     .spinner {
       width: 42px; height: 42px;
@@ -292,40 +298,38 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .overlay-text { color: rgba(255,255,255,.78); font-size: 14px; }
     .retry-btn {
-      background: var(--green);
-      color: #fff; border: none;
-      border-radius: 12px;
-      padding: 10px 28px;
+      background: var(--green); color: #fff; border: none;
+      border-radius: 12px; padding: 10px 28px;
       font-family: 'Cairo', sans-serif;
       font-size: 14px; font-weight: 700;
-      cursor: pointer; transition: opacity .2s;
+      cursor: pointer; margin-top: 4px; transition: opacity .2s;
     }
     .retry-btn:hover { opacity: .85; }
     .hidden { display: none !important; }
 
     /* ══════════════════════════════════
-       METHOD MODAL (bottom sheet)
+       METHOD BOTTOM-SHEET
     ══════════════════════════════════ */
     .modal-backdrop {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0,0,0,.55);
       z-index: 50;
       display: flex; align-items: flex-end; justify-content: center;
-      padding: 0 0 0;
       animation: fadeIn .2s;
     }
-    .modal-backdrop.hidden { display: none !important; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
     .modal-sheet {
       background: #fff;
       border-radius: 22px 22px 0 0;
       width: 100%; max-width: 480px;
-      padding: 20px 20px 32px;
+      padding: 20px 20px 36px;
       animation: slideUp .25s ease;
+      max-height: 80vh; overflow-y: auto;
     }
-    @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
-
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity: 0; }
+      to   { transform: none; opacity: 1; }
+    }
     .modal-handle {
       width: 38px; height: 4px;
       background: #ddd; border-radius: 99px;
@@ -333,88 +337,73 @@
     }
     .modal-title {
       font-size: 15px; font-weight: 700;
-      color: #333; text-align: center;
-      margin-bottom: 16px;
+      color: #333; text-align: center; margin-bottom: 14px;
     }
     .method-option {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: background .15s;
+      padding: 12px 16px; border-radius: 12px;
+      cursor: pointer; transition: background .15s;
       font-size: 14px; color: #2a2a2a; font-weight: 600;
     }
     .method-option:hover { background: #f4f4f4; }
     .method-option.selected { background: var(--green-bg); color: var(--green-text); }
-    .method-option .check {
-      width: 20px; height: 20px;
-      border-radius: 50%;
+    .check-circle {
+      width: 20px; height: 20px; border-radius: 50%;
       border: 2px solid #ccc;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .method-option.selected .check {
-      border-color: var(--green); background: var(--green);
+    .method-option.selected .check-circle {
+      background: var(--green); border-color: var(--green);
     }
-    .method-option.selected .check::after {
+    .method-option.selected .check-circle::after {
       content: '';
-      width: 6px; height: 10px;
-      border: 2px solid #fff;
-      border-top: none; border-right: none; /* wrong */
-      /* use a real checkmark */
-      display: block;
-      width: 5px; height: 9px;
+      display: block; width: 5px; height: 9px;
       border-right: 2px solid #fff;
       border-bottom: 2px solid #fff;
-      transform: rotate(45deg) translate(-1px, -1px);
+      transform: rotate(45deg) translate(-1px,-1px);
     }
 
     /* ══════════════════════════════════
        DESKTOP SIDEBAR
     ══════════════════════════════════ */
-    .sidebar-card {
-      background: rgba(255,255,255,0.7);
+    .sb-card {
+      background: rgba(255,255,255,.72);
       backdrop-filter: blur(12px);
       border-radius: 20px;
-      padding: 22px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
     }
-    .sidebar-card h3 {
-      font-size: 13px;
-      color: #666;
-      font-weight: 700;
-      margin-bottom: 14px;
-      letter-spacing: .5px;
+    .sb-card h3 {
+      font-size: 12px; color: #888;
+      font-weight: 700; letter-spacing: .5px;
+      margin-bottom: 12px;
     }
+    .sb-next {
+      background: linear-gradient(135deg, var(--green) 0%, #1a9e50 100%);
+      border-radius: 18px; padding: 18px;
+      color: #fff; text-align: center;
+    }
+    .sb-next .n-label  { font-size: 11px; opacity: .82; margin-bottom: 5px; }
+    .sb-next .n-name   { font-size: 28px; font-weight: 900; margin-bottom: 6px; }
+    .sb-next .n-cd     { font-size: 30px; font-weight: 900; direction: ltr; font-variant-numeric: tabular-nums; letter-spacing: 2px; }
+    .sb-next .n-sub    { font-size: 11px; opacity: .7; margin-top: 4px; }
+
     .info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       padding: 8px 0;
-      border-bottom: 1px solid rgba(0,0,0,0.06);
+      border-bottom: 1px solid rgba(0,0,0,.06);
       font-size: 13px;
     }
     .info-row:last-child { border-bottom: none; }
-    .info-label { color: #888; font-weight: 600; }
-    .info-val { color: #222; font-weight: 700; }
-    .info-val.green { color: var(--green-text); }
-
-    .sidebar-next {
-      background: linear-gradient(135deg, var(--green) 0%, #1a9e50 100%);
-      border-radius: 16px;
-      padding: 18px;
-      color: #fff;
-      text-align: center;
-    }
-    .sidebar-next .sn-label { font-size: 12px; opacity: .85; margin-bottom: 6px; }
-    .sidebar-next .sn-name  { font-size: 26px; font-weight: 900; margin-bottom: 8px; }
-    .sidebar-next .sn-countdown { font-size: 32px; font-weight: 900; direction: ltr; font-variant-numeric: tabular-nums; letter-spacing: 2px; }
-    .sidebar-next .sn-sub  { font-size: 11px; opacity: .75; margin-top: 4px; }
+    .i-label { color: #888; font-weight: 600; }
+    .i-val   { color: #222; font-weight: 700; }
+    .i-val.green { color: var(--green-text); }
   </style>
 </head>
 <body>
 
-<!-- Method bottom-sheet modal -->
+<!-- Method modal -->
 <div class="modal-backdrop hidden" id="methodModal" onclick="closeModal(event)">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -428,45 +417,64 @@
   <!-- ── Main card ── -->
   <div class="card" id="card">
 
-    <!-- Loading -->
+    <!-- overlays -->
     <div class="overlay" id="loadingOverlay">
       <div class="spinner"></div>
-      <span class="overlay-text" id="loadingText">جارِ تحديد موقعك …</span>
+      <span class="overlay-text" id="loadingText">جارِ تحديد موقعك…</span>
     </div>
-
-    <!-- Error -->
     <div class="overlay hidden" id="errorOverlay">
       <span style="font-size:30px">⚠️</span>
       <span class="overlay-text" id="errorMsg">تعذّر تحميل مواقيت الصلاة</span>
       <button class="retry-btn" onclick="init()">إعادة المحاولة</button>
     </div>
 
-    <!-- Hero -->
-    <div class="hero">
+    <!-- ── Hero ── -->
+    <div class="hero" id="hero">
+      <!-- cross-fade bg layers -->
+      <div class="hero-bg" id="bgA"></div>
+      <div class="hero-bg" id="bgB"></div>
+      <!-- gradient overlay -->
+      <div class="hero-grad"></div>
+
+      <!-- top bar -->
       <div class="top-bar">
-        <button class="method-btn" onclick="openModal()">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        <button class="glass-chip" onclick="openModal()">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
           <span id="methodLabel">أم القرى</span>
         </button>
-        <div class="hijri-chip">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span id="hijriDate">— هجري</span>
-        </div>
+        <div class="glass-chip" id="hijriDate">— هجري</div>
       </div>
 
+      <!-- gallery dot nav (vertical, left side) -->
+      <div class="gallery-dots" id="galleryDots"></div>
+
+      <!-- arrows (desktop) -->
+      <button class="hero-arrow prev" onclick="shiftBg(1)"  aria-label="next">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="hero-arrow next" onclick="shiftBg(-1)" aria-label="prev">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+
+      <!-- image name label -->
+      <div class="bg-label" id="bgLabel"></div>
+
+      <!-- bottom split -->
       <div class="hero-bottom">
-        <!-- countdown (left side visually = ltr-start in rtl layout) -->
         <div class="countdown-side">
           <span class="countdown-label">باقي على الأذان</span>
           <div class="countdown" id="countdown">00 : 00 : 00</div>
         </div>
-        <!-- prayer name + location (right side) -->
         <div class="prayer-side">
           <div class="location-row">
             <span class="location-text" id="locationText" onclick="init()">جارِ التحديد…</span>
             <span class="loc-pin">
               <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
               </svg>
             </span>
           </div>
@@ -475,7 +483,7 @@
       </div>
     </div><!-- /hero -->
 
-    <!-- Prayer columns -->
+    <!-- prayer list -->
     <div class="prayer-list">
       <div class="prayers-row" id="prayerCols"></div>
     </div>
@@ -484,47 +492,148 @@
 
   <!-- ── Desktop sidebar ── -->
   <div class="sidebar">
-
-    <div class="sidebar-card sidebar-next">
-      <div class="sn-label">الصلاة القادمة</div>
-      <div class="sn-name" id="sbNextName">—</div>
-      <div class="sn-countdown" id="sbCountdown">00 : 00 : 00</div>
-      <div class="sn-sub">باقي على الأذان</div>
+    <div class="sb-next sb-card">
+      <div class="n-label">الصلاة القادمة</div>
+      <div class="n-name" id="sbNextName">—</div>
+      <div class="n-cd"   id="sbCountdown">00 : 00 : 00</div>
+      <div class="n-sub">باقي على الأذان</div>
     </div>
 
-    <div class="sidebar-card">
+    <div class="sb-card">
       <h3>تفاصيل اليوم</h3>
-      <div class="info-row">
-        <span class="info-label">الشروق</span>
-        <span class="info-val" id="sbSunrise">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">الغروب</span>
-        <span class="info-val" id="sbSunset">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">منتصف الليل</span>
-        <span class="info-val" id="sbMidnight">—</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">الصلاة الحالية</span>
-        <span class="info-val green" id="sbCurrent">—</span>
-      </div>
+      <div class="info-row"><span class="i-label">الشروق</span>   <span class="i-val" id="sbSunrise">—</span></div>
+      <div class="info-row"><span class="i-label">الغروب</span>   <span class="i-val" id="sbSunset">—</span></div>
+      <div class="info-row"><span class="i-label">منتصف الليل</span><span class="i-val" id="sbMidnight">—</span></div>
+      <div class="info-row"><span class="i-label">الصلاة الحالية</span><span class="i-val green" id="sbCurrent">—</span></div>
     </div>
 
-    <div class="sidebar-card">
+    <div class="sb-card">
       <h3>جميع المواقيت</h3>
       <div id="sbAllPrayers"></div>
     </div>
-
   </div>
 
 </div><!-- /page-root -->
 
 <script>
-/* ═══════════════════════════════════════
-   Data
-═══════════════════════════════════════ */
+/* ═══════════════════════════════════════════════
+   MOSQUE BACKGROUND GALLERY
+   All images confirmed as Islamic mosque photos
+   from Unsplash (free, no attribution required)
+═══════════════════════════════════════════════ */
+const MOSQUE_IMAGES = [
+  {
+    id:    'Gbzv41PK76s',
+    label: 'مسجد عند الغروب',
+    /* Silhouette of mosque at golden hour – Kiran CK */
+  },
+  {
+    id:    'bqN06HylwXY',
+    label: 'مسجد أبوظبي',
+    /* Beautiful white mosque, Abu Dhabi – Krzysztof */
+  },
+  {
+    id:    'UPp3qJaxhBs',
+    label: 'مسجد الحسن الثاني',
+    /* Hassan II Mosque, Casablanca – Arman Khalili */
+  },
+  {
+    id:    '_LFzkvnhTtE',
+    label: 'المسجد الحرام، مكة',
+    /* Al-Masjid Al-Haram view – Ishan */
+  },
+  {
+    id:    'iJNcLzNLrYs',
+    label: 'المسجد النبوي',
+    /* Masjid Al-Nabawi minarets – Hatem Ramadan */
+  },
+  {
+    id:    'BhUcMCbbKpU',
+    label: 'ساحة المسجد النبوي',
+    /* Masjid Al-Nabawi umbrella plaza – Nurul */
+  },
+  {
+    id:    'H6ApvoXehSA',
+    label: 'مسجد ملوّن الجاكرتا',
+    /* Masjid Babah Alun colourful dome – Alim */
+  },
+];
+
+function bgUrl(id) {
+  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=900&q=85`;
+}
+
+/* active bg layer & index */
+let bgIdx   = 0;
+let bgLayer = 'A';          // 'A' or 'B'
+const bgA   = document.getElementById('bgA');
+const bgB   = document.getElementById('bgB');
+let   bgLabelTimer = null;
+
+/* Preload an image then cross-fade */
+function setBg(idx, showLabel = false) {
+  bgIdx = ((idx % MOSQUE_IMAGES.length) + MOSQUE_IMAGES.length) % MOSQUE_IMAGES.length;
+  const url  = bgUrl(MOSQUE_IMAGES[bgIdx].id);
+  const next = bgLayer === 'A' ? bgB : bgA;
+  const curr = bgLayer === 'A' ? bgA : bgB;
+
+  const img = new Image();
+  img.onload = () => {
+    next.style.backgroundImage = `url(${url})`;
+    next.classList.add('show');
+    curr.classList.remove('show');
+    bgLayer = bgLayer === 'A' ? 'B' : 'A';
+    renderDots();
+
+    if (showLabel) {
+      const lbl = document.getElementById('bgLabel');
+      lbl.textContent = MOSQUE_IMAGES[bgIdx].label;
+      lbl.classList.add('show');
+      clearTimeout(bgLabelTimer);
+      bgLabelTimer = setTimeout(() => lbl.classList.remove('show'), 2000);
+    }
+  };
+  img.onerror = () => {
+    /* skip broken image silently */
+    shiftBg(1, showLabel);
+  };
+  img.src = url;
+}
+
+function shiftBg(dir = 1, showLabel = true) {
+  setBg(bgIdx + dir, showLabel);
+}
+
+function renderDots() {
+  const container = document.getElementById('galleryDots');
+  container.innerHTML = '';
+  MOSQUE_IMAGES.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'g-dot' + (i === bgIdx ? ' active' : '');
+    d.onclick = () => setBg(i, true);
+    container.appendChild(d);
+  });
+}
+
+/* Touch swipe on hero */
+let swipeX = 0;
+const hero = document.getElementById('hero');
+hero.addEventListener('touchstart', e => { swipeX = e.touches[0].clientX; }, { passive: true });
+hero.addEventListener('touchend',   e => {
+  const dx = swipeX - e.changedTouches[0].clientX;
+  if (Math.abs(dx) > 45) shiftBg(dx > 0 ? 1 : -1, true);
+}, { passive: true });
+
+/* Auto-advance every 12 s */
+setInterval(() => shiftBg(1, false), 12000);
+
+/* Init gallery */
+renderDots();
+setBg(0, false);   /* load first image */
+
+/* ═══════════════════════════════════════════════
+   PRAYER TIMES DATA
+═══════════════════════════════════════════════ */
 const PRAYERS = [
   { key: 'Fajr',    name: 'الفجر'  },
   { key: 'Dhuhr',   name: 'الظهر'  },
@@ -532,30 +641,26 @@ const PRAYERS = [
   { key: 'Maghrib', name: 'المغرب' },
   { key: 'Isha',    name: 'العشاء' },
 ];
-
 const METHODS = [
-  { id: 4,  label: 'أم القرى (السعودية)' },
-  { id: 3,  label: 'مسلم عالمي' },
-  { id: 2,  label: 'ISNA – أمريكا الشمالية' },
-  { id: 1,  label: 'كراتشي – علوم إسلامية' },
-  { id: 5,  label: 'مصر – وزارة الأوقاف' },
-  { id: 9,  label: 'خليج عُمان' },
-  { id: 11, label: 'فقه أمريكا الشمالية' },
+  { id: 4,  label: 'أم القرى (السعودية)',       short: 'أم القرى' },
+  { id: 3,  label: 'مسلم عالمي',               short: 'مسلم عالمي' },
+  { id: 2,  label: 'ISNA – أمريكا الشمالية',   short: 'ISNA' },
+  { id: 1,  label: 'كراتشي – علوم إسلامية',    short: 'كراتشي' },
+  { id: 5,  label: 'مصر – وزارة الأوقاف',      short: 'مصر' },
+  { id: 9,  label: 'خليج عُمان',               short: 'خليج عُمان' },
+  { id: 11, label: 'فقه أمريكا الشمالية',       short: 'فقه أمريكا' },
 ];
 
 let timings  = null;
-let rawData  = null;
 let timerIds = [];
 let method   = 4;
 let coords   = null;
 
-/* ═══════════════════════════════════════
-   Boot
-═══════════════════════════════════════ */
 buildMethodModal();
+init();
 
 async function init() {
-  setLoading('جارِ تحديد موقعك …');
+  setLoading('جارِ تحديد موقعك…');
   clearTimers();
   try {
     coords = await getCoords();
@@ -565,39 +670,32 @@ async function init() {
     setError(e.message || 'حدث خطأ غير متوقع');
   }
 }
-init();
 
-/* ═══════════════════════════════════════
-   Geolocation
-═══════════════════════════════════════ */
+/* ── Geolocation ── */
 function getCoords() {
   return new Promise(resolve => {
     if (!navigator.geolocation) { resolve({ lat: 21.3891, lon: 39.8579 }); return; }
     navigator.geolocation.getCurrentPosition(
-      p => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
+      p  => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
       () => resolve({ lat: 21.3891, lon: 39.8579 }),
       { timeout: 9000 }
     );
   });
 }
 
-/* ═══════════════════════════════════════
-   API – Aladhan
-═══════════════════════════════════════ */
+/* ── Aladhan API ── */
 async function loadTimes(lat, lon, mth) {
   const d    = new Date();
   const date = `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}`;
-  const url  = `https://api.aladhan.com/v1/timings/${date}?latitude=${lat}&longitude=${lon}&method=${mth}`;
-
-  const res  = await fetch(url);
+  const res  = await fetch(
+    `https://api.aladhan.com/v1/timings/${date}?latitude=${lat}&longitude=${lon}&method=${mth}`
+  );
   if (!res.ok) throw new Error('فشل الاتصال بخادم المواقيت');
   const json = await res.json();
   if (json.code !== 200) throw new Error('استجابة غير متوقعة من الخادم');
 
-  rawData = json.data;
-  timings = rawData.timings;
-
-  const h = rawData.date.hijri;
+  timings = json.data.timings;
+  const h = json.data.date.hijri;
   $('hijriDate').textContent = `${h.day} ${h.month.ar} ${h.year}`;
 
   render();
@@ -605,9 +703,7 @@ async function loadTimes(lat, lon, mth) {
   startTick();
 }
 
-/* ═══════════════════════════════════════
-   Reverse geocoding – Nominatim
-═══════════════════════════════════════ */
+/* ── Nominatim ── */
 async function loadCity(lat, lon) {
   try {
     const res  = await fetch(
@@ -617,26 +713,25 @@ async function loadCity(lat, lon) {
     const json = await res.json();
     const a    = json.address || {};
     const city = a.city || a.town || a.village || a.county || '';
-    const cntry= a.country || '';
-    $('locationText').textContent = city ? `${city}، ${cntry}` : cntry || 'موقعك الحالي';
+    $('locationText').textContent = city
+      ? `${city}، ${a.country || ''}`
+      : (a.country || 'موقعك الحالي');
   } catch {
     $('locationText').textContent = 'موقعك الحالي';
   }
 }
 
-/* ═══════════════════════════════════════
-   Render
-═══════════════════════════════════════ */
+/* ── Render ── */
 function render() {
-  const curKey  = currentPrayerKey();
-  const nextObj = nextPrayer();
+  const curKey = currentKey();
+  const nextP  = nextPrayer();
 
-  /* card prayer columns */
+  /* columns */
   const cols = $('prayerCols');
   cols.innerHTML = '';
   PRAYERS.forEach(p => {
     const active = p.key === curKey;
-    const col = ce('div');
+    const col    = document.createElement('div');
     col.className = 'prayer-col' + (active ? ' active' : '');
     col.innerHTML = `
       <span class="p-name">${p.name}</span>
@@ -645,32 +740,30 @@ function render() {
     cols.appendChild(col);
   });
 
-  /* next prayer label on hero */
-  $('nextPrayerName').textContent = nextObj ? nextObj.name : PRAYERS[0].name;
+  /* hero next prayer */
+  $('nextPrayerName').textContent = nextP ? nextP.name : PRAYERS[0].name;
 
   /* sidebar */
-  $('sbNextName').textContent  = nextObj ? nextObj.name : PRAYERS[0].name;
+  $('sbNextName').textContent  = nextP ? nextP.name : PRAYERS[0].name;
   $('sbCurrent').textContent   = PRAYERS.find(p => p.key === curKey)?.name || '—';
-  $('sbSunrise').textContent   = fmt(timings['Sunrise'] || '—');
-  $('sbSunset').textContent    = fmt(timings['Sunset']  || '—');
-  $('sbMidnight').textContent  = fmt(timings['Midnight']|| '—');
+  $('sbSunrise').textContent   = fmt(timings['Sunrise']  || '—');
+  $('sbSunset').textContent    = fmt(timings['Sunset']   || '—');
+  $('sbMidnight').textContent  = fmt(timings['Midnight'] || '—');
 
   const allDiv = $('sbAllPrayers');
   allDiv.innerHTML = '';
   PRAYERS.forEach(p => {
-    const row = ce('div');
-    row.className = 'info-row';
+    const row    = document.createElement('div');
     const active = p.key === curKey;
+    row.className = 'info-row';
     row.innerHTML = `
-      <span class="info-label">${p.name}</span>
-      <span class="info-val${active?' green':''}">${fmt(timings[p.key])}</span>`;
+      <span class="i-label">${p.name}</span>
+      <span class="i-val${active?' green':''}">${fmt(timings[p.key])}</span>`;
     allDiv.appendChild(row);
   });
 }
 
-/* ═══════════════════════════════════════
-   Countdown tick
-═══════════════════════════════════════ */
+/* ── Countdown ── */
 function startTick() { tick(); timerIds.push(setInterval(tick, 1000)); }
 
 function tick() {
@@ -683,47 +776,42 @@ function tick() {
   const str = `${pad(h)} : ${pad(m)} : ${pad(s)}`;
   $('countdown').textContent   = str;
   $('sbCountdown').textContent = str;
-  if (s === 0) render();
+  if (s === 0 && m === 0) render();
 }
 
-/* ═══════════════════════════════════════
-   Method modal
-═══════════════════════════════════════ */
+/* ── Method modal ── */
 function buildMethodModal() {
   const list = $('methodList');
   list.innerHTML = '';
   METHODS.forEach(mt => {
-    const el = ce('div');
+    const el = document.createElement('div');
     el.className = 'method-option' + (mt.id === method ? ' selected' : '');
-    el.dataset.id = mt.id;
-    el.innerHTML = `<span>${mt.label}</span><div class="check"></div>`;
-    el.onclick = () => selectMethod(mt.id, mt.label);
+    el.innerHTML = `<span>${mt.label}</span><div class="check-circle"></div>`;
+    el.onclick   = () => selectMethod(mt.id, mt.short);
     list.appendChild(el);
   });
 }
 function openModal()  { $('methodModal').classList.remove('hidden'); }
 function closeModal(e){ if (e.target === $('methodModal')) $('methodModal').classList.add('hidden'); }
-function selectMethod(id, label) {
+function selectMethod(id, short) {
   method = id;
-  $('methodLabel').textContent = METHODS.find(m => m.id === id)?.label.split('–')[0].split('(')[0].trim() || label;
+  $('methodLabel').textContent = short;
   buildMethodModal();
   $('methodModal').classList.add('hidden');
   if (coords) {
-    setLoading('جارِ تحديث المواقيت …');
+    setLoading('جارِ تحديث المواقيت…');
     clearTimers();
     loadTimes(coords.lat, coords.lon, method).catch(e => setError(e.message));
   }
 }
 
-/* ═══════════════════════════════════════
-   Helpers
-═══════════════════════════════════════ */
+/* ── Helpers ── */
 function nextPrayer() {
   const now = Date.now();
   for (const p of PRAYERS) { if (prayerDate(p.key) > now) return p; }
   return PRAYERS[0];
 }
-function currentPrayerKey() {
+function currentKey() {
   const now  = Date.now();
   let   last = PRAYERS[PRAYERS.length - 1];
   for (let i = PRAYERS.length - 1; i >= 0; i--) {
@@ -732,22 +820,20 @@ function currentPrayerKey() {
   return last.key;
 }
 function prayerDate(key) {
-  if (!timings || !timings[key]) return new Date(0);
+  if (!timings?.[key]) return new Date(0);
   const [h, m] = timings[key].split(':').map(Number);
   const d = new Date(); d.setHours(h, m, 0, 0); return d;
 }
 function fmt(raw) {
   if (!raw || raw === '—') return '—';
-  const parts = raw.split(':');
-  if (parts.length < 2) return raw;
-  const h = parseInt(parts[0], 10);
-  const m = parts[1];
-  return `${pad(h % 12 || 12)}:${m} ${h < 12 ? 'ص' : 'م'}`;
+  const p = raw.split(':');
+  if (p.length < 2) return raw;
+  const h = parseInt(p[0], 10);
+  return `${pad(h % 12 || 12)}:${p[1]} ${h < 12 ? 'ص' : 'م'}`;
 }
-function pad(n) { return String(n).padStart(2, '0'); }
+function pad(n)  { return String(n).padStart(2, '0'); }
 function clearTimers() { timerIds.forEach(clearInterval); timerIds = []; }
-function $(id) { return document.getElementById(id); }
-function ce(tag) { return document.createElement(tag); }
+function $(id)   { return document.getElementById(id); }
 
 function setLoading(msg) {
   $('loadingText').textContent = msg;
