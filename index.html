@@ -30,21 +30,7 @@
         radial-gradient(ellipse at 85% 15%, rgba(190,215,170,.5) 0%, transparent 55%);
     }
 
-    /* ── Desktop 2-column layout ── */
-    @media (min-width: 900px) {
-      body { align-items: flex-start; padding: 40px 20px; }
-      .page-root {
-        display: grid;
-        grid-template-columns: 440px 1fr;
-        gap: 28px;
-        width: 100%;
-        max-width: 920px;
-        align-items: start;
-      }
-    }
-    @media (max-width: 899px) {
-      .page-root  { max-width: 440px; width: 100%; }
-    }
+    .page-root { max-width: 440px; width: 100%; }
 
     /* ══════════════════════════════════
        CARD
