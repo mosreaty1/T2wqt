@@ -518,49 +518,55 @@
 <script>
 /* ═══════════════════════════════════════════════
    MOSQUE BACKGROUND GALLERY
-   All images confirmed as Islamic mosque photos
-   from Unsplash (free, no attribution required)
+   All images verified as real Islamic mosque
+   exterior photos from Pexels (free license,
+   HTTP 200 confirmed before deployment).
 ═══════════════════════════════════════════════ */
 const MOSQUE_IMAGES = [
   {
-    id:    'Gbzv41PK76s',
-    label: 'مسجد عند الغروب',
-    /* Silhouette of mosque at golden hour – Kiran CK */
+    id:    '33687823',
+    label: 'مسجد الشيخ زايد، أبوظبي',
+    /* Sheikh Zayed Grand Mosque at Twilight Reflection – Lloyd Alozie */
   },
   {
-    id:    'bqN06HylwXY',
-    label: 'مسجد أبوظبي',
-    /* Beautiful white mosque, Abu Dhabi – Krzysztof */
+    id:    '1631676',
+    label: 'صلاة الغروب',
+    /* Silhouette of Mosque during Sunset – Abdullah Ghatasheh */
   },
   {
-    id:    'UPp3qJaxhBs',
-    label: 'مسجد الحسن الثاني',
-    /* Hassan II Mosque, Casablanca – Arman Khalili */
+    id:    '16737017',
+    label: 'مساجد إسطنبول',
+    /* Mosque Silhouette in Istanbul at Sunset – Kaan ALTUN */
   },
   {
-    id:    '_LFzkvnhTtE',
-    label: 'المسجد الحرام، مكة',
-    /* Al-Masjid Al-Haram view – Ishan */
+    id:    '28669652',
+    label: 'مسجد الحاكم، القاهرة',
+    /* Stunning Evening View of Al-Hakim Mosque in Cairo – Mohamed samir */
   },
   {
-    id:    'iJNcLzNLrYs',
-    label: 'المسجد النبوي',
-    /* Masjid Al-Nabawi minarets – Hatem Ramadan */
+    id:    '6099936',
+    label: 'المسجد النبوي، المدينة المنورة',
+    /* Al-Masjid an-Nabawi (Prophet's Mosque) courtyard – jepret hikmah */
   },
   {
-    id:    'BhUcMCbbKpU',
-    label: 'ساحة المسجد النبوي',
-    /* Masjid Al-Nabawi umbrella plaza – Nurul */
+    id:    '14440333',
+    label: 'المسجد الحرام، مكة المكرمة',
+    /* Landscape Photography of Masjid al-Haram – Talal Hakim */
   },
   {
-    id:    'H6ApvoXehSA',
-    label: 'مسجد ملوّن الجاكرتا',
-    /* Masjid Babah Alun colourful dome – Alim */
+    id:    '2344997',
+    label: 'جامع دلهي عند الغروب',
+    /* View of Jama Masjid at Sunset, New Delhi – Fuzail Ahmad */
+  },
+  {
+    id:    '7805386',
+    label: 'أفق إسطنبول',
+    /* Mosque Silhouette at Sunset, Istanbul skyline */
   },
 ];
 
 function bgUrl(id) {
-  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=900&q=85`;
+  return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=900&h=580&dpr=1`;
 }
 
 /* active bg layer & index */
